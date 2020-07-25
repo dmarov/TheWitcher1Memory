@@ -58,14 +58,14 @@ int main(int argc, char **argv)
 {
 	DWORD pid = 0;
 	DWORD vitalityAddr;
-	DWORD off1, off2, off3, off4;
+	DWORD addr0 = 0x20C9C2D0, addr1, addr2, addr3, addr4, addr5;
 	float newVitality = 10000;
 	float curVitality;
 
 	std::string moduleName = "witcher.exe";
 	std::string windowName = "The Witcher (1.4.5.1304)";
 
-	std::vector<int> v = { 0x00DC09E4, 0x29C, 0x4, 0x24, 0x0, 0x58 };
+	std::vector<int> v = { 0x29C, 0x4, 0x24, 0x0, 0x58 };
 	
 	//HWND window = FindWindow(NULL, (LPCWSTR)windowName.c_str());
 	HWND window = FindWindowA(NULL, windowName.c_str());
@@ -74,16 +74,23 @@ int main(int argc, char **argv)
 	std::cout << std::hex << pid << std::endl;
 	HANDLE handle = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
 
-	DWORD clientBaseAddr = 0x2207C2D0 - v[0];
-	DWORD baseAddr = clientBaseAddr + v[0];
+	//DWORD clientBaseAddr = 0x2207C2D0 - v[0];
+	//DWORD baseAddr = clientBaseAddr + v[0];
 
-	ReadProcessMemory(handle, (LPCVOID)(baseAddr + v[1]), &off1, sizeof(off1), NULL);
-	ReadProcessMemory(handle, (LPCVOID)(off1 + v[2]), &off2, sizeof(off2), NULL);
-	ReadProcessMemory(handle, (LPCVOID)(off2 + v[3]), &off3, sizeof(off3), NULL);
-	ReadProcessMemory(handle, (LPCVOID)(off3 + v[4]), &off4, sizeof(off4), NULL);
+	ReadProcessMemory(handle, (LPCVOID)(addr0 + v[0]), &addr1, sizeof(addr1), NULL);
+	std::cout << addr1 << std::endl;
+	ReadProcessMemory(handle, (LPCVOID)(addr1 + v[1]), &addr2, sizeof(addr2), NULL);
+	std::cout << addr2 << std::endl;
+	ReadProcessMemory(handle, (LPCVOID)(addr2 + v[2]), &addr3, sizeof(addr3), NULL);
+	std::cout << addr3 << std::endl;
+	ReadProcessMemory(handle, (LPCVOID)(addr3 + v[3]), &addr4, sizeof(addr4), NULL);
+	std::cout << addr4 << std::endl;
+	//ReadProcessMemory(handle, (LPCVOID)(off3 + v[4]), &off5, sizeof(off4), NULL);
+	//std::cout << off5 << std::endl;
 
-	vitalityAddr = off4 + v[5];
+	vitalityAddr = addr4 + v[4];
 
+	std::cout << vitalityAddr << std::endl;
 	ReadProcessMemory(handle, (LPCVOID)(vitalityAddr), &curVitality, sizeof(curVitality), NULL);
 
 	while (true) {
