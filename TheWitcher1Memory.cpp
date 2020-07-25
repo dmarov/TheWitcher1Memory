@@ -57,10 +57,10 @@ int main(int argc, char **argv)
 {
 	DWORD pid;
 	DWORD vitalityAddr;
-	DWORD baseAddr;
+	DWORD baseAddr, off1, off2, off3, off4;
 	HANDLE handle;
 	float newVitality = 10000;
-	float curViotality;
+	float curVitality;
 
 	std::string moduleName = "witcher.exe";
 	std::string windowName = "The Witcher (1.4.5.1304)";
@@ -73,10 +73,19 @@ int main(int argc, char **argv)
 	handle = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
 
 	DWORD clientBaseAddr = getModuleBaseAddress((TCHAR*)moduleName.c_str(), pid);
+	//std::cout << std::hex << clientBaseAddr << std::endl;
 
 	ReadProcessMemory(handle, (LPCVOID)(clientBaseAddr + v[0]), &baseAddr, sizeof(baseAddr), NULL);
+	ReadProcessMemory(handle, (LPCVOID)(baseAddr + v[1]), &off1, sizeof(off1), NULL);
+	ReadProcessMemory(handle, (LPCVOID)(off1 + v[2]), &off2, sizeof(off2), NULL);
+	ReadProcessMemory(handle, (LPCVOID)(off2 + v[3]), &off3, sizeof(off3), NULL);
+	ReadProcessMemory(handle, (LPCVOID)(off3 + v[4]), &off4, sizeof(off4), NULL);
 
-	std::cout << std::hex << baseAddr << std::endl;
+	vitalityAddr = off4 + v[5];
 
+	ReadProcessMemory(handle, (LPCVOID)(vitalityAddr), &curVitality, sizeof(curVitality), NULL);
+	std::cout << curVitality << std::endl;
+
+	//WriteProcessMemory(handle, (LPVOID)vitalityAddr, &newVitality, sizeof(newVitality), 0);
 	std::cin.get();
 }
