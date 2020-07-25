@@ -44,6 +44,7 @@ DWORD getModuleBaseAddress(TCHAR* moduleName, DWORD pid)
 			if (_tcscmp(entry.szModule, moduleName) == 0)
 			{
 				moduleBaseAddress = (DWORD)entry.modBaseAddr;
+				break;
 			}
 		} while (Module32Next(handle, &entry));
 	}
@@ -55,10 +56,9 @@ DWORD getModuleBaseAddress(TCHAR* moduleName, DWORD pid)
 
 int main(int argc, char **argv)
 {
-	DWORD pid;
+	DWORD pid = 0;
 	DWORD vitalityAddr;
-	DWORD baseAddr, off1, off2, off3, off4;
-	HANDLE handle;
+	DWORD off1, off2, off3, off4;
 	float newVitality = 10000;
 	float curVitality;
 
@@ -67,15 +67,16 @@ int main(int argc, char **argv)
 
 	std::vector<int> v = { 0x00DC09E4, 0x29C, 0x4, 0x24, 0x0, 0x58 };
 	
-	HWND window = FindWindow(NULL, (LPCWSTR)windowName.c_str());
+	//HWND window = FindWindow(NULL, (LPCWSTR)windowName.c_str());
+	HWND window = FindWindowA(NULL, windowName.c_str());
 	GetWindowThreadProcessId(window, &pid);
 
-	handle = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
+	std::cout << std::hex << pid << std::endl;
+	HANDLE handle = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
 
-	DWORD clientBaseAddr = getModuleBaseAddress((TCHAR*)moduleName.c_str(), pid);
-	//std::cout << std::hex << clientBaseAddr << std::endl;
+	DWORD clientBaseAddr = 0x2207C2D0 - v[0];
+	DWORD baseAddr = clientBaseAddr + v[0];
 
-	ReadProcessMemory(handle, (LPCVOID)(clientBaseAddr + v[0]), &baseAddr, sizeof(baseAddr), NULL);
 	ReadProcessMemory(handle, (LPCVOID)(baseAddr + v[1]), &off1, sizeof(off1), NULL);
 	ReadProcessMemory(handle, (LPCVOID)(off1 + v[2]), &off2, sizeof(off2), NULL);
 	ReadProcessMemory(handle, (LPCVOID)(off2 + v[3]), &off3, sizeof(off3), NULL);
@@ -84,8 +85,9 @@ int main(int argc, char **argv)
 	vitalityAddr = off4 + v[5];
 
 	ReadProcessMemory(handle, (LPCVOID)(vitalityAddr), &curVitality, sizeof(curVitality), NULL);
-	std::cout << curVitality << std::endl;
 
-	//WriteProcessMemory(handle, (LPVOID)vitalityAddr, &newVitality, sizeof(newVitality), 0);
-	std::cin.get();
+	while (true) {
+		WriteProcessMemory(handle, (LPVOID)vitalityAddr, &newVitality, sizeof(newVitality), 0);
+		Sleep(100);
+	}
 }
